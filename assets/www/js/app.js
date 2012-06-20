@@ -70,11 +70,14 @@ require(['jquery', 'l10n', 'geo', 'api', 'templates', 'monuments', 'jquery.local
 	var curPageName = null;
 	var curMonument = null; // Used to store state for take photo, etc
 
-	function showPage(pageName) {
+	function showPage(pageName, pageTitle) {
 		var $page = $("#" + pageName); 
 		if(!$page.hasClass('popup-container-container')) {
 			$('.page, .popup-container-container').hide();
 			curPageName = pageName;
+		}
+		if(pageTitle) {
+			$("h2", $page).text(pageTitle);
 		}
 		$page.show();
 	}
@@ -93,7 +96,7 @@ require(['jquery', 'l10n', 'geo', 'api', 'templates', 'monuments', 'jquery.local
 		showPage('detail-page');
 	}
 
-	function showMonumentsList(monuments) {
+	function showMonumentsList(monuments, locationName) {
 		var monumentTemplate = templates.getTemplate('monument-list-item-template');	
 		var listThumbFetcher = commonsApi.getImageFetcher(64, 64);
 		$.each(monuments, function(i, monument) {
@@ -106,7 +109,7 @@ require(['jquery', 'l10n', 'geo', 'api', 'templates', 'monuments', 'jquery.local
 			});
 		});
 		listThumbFetcher.send();
-		showPage('results-page');
+		showPage('results-page', locationName);
 	}
 
 	function calculateCenterAndZoom(monuments) {
@@ -265,8 +268,10 @@ require(['jquery', 'l10n', 'geo', 'api', 'templates', 'monuments', 'jquery.local
 			var params = {
 				limit: 200
 			};
+			var countryName = $(this).text();
+			showMonumentsList([], countryName); // load page blank to start with
 			monuments.getForCountry($(this).data('campaign'), params).done(function(monuments) {
-				showMonumentsList(monuments);
+				showMonumentsList(monuments, countryName);
 				$("#show-map").unbind('click').click(function() {
 					console.log("Switching to map view");
 					showMonumentsMap(monuments);
